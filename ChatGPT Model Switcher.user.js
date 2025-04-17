@@ -1,116 +1,88 @@
 // ==UserScript==
-// @name         ChatGPT Model Auto-Switcher
-// @namespace    http://tampermonkey.net/
-// @version      0.21
-// @description  switch models on ChatGPT
+// @name         ChatGPT Model Switcher
+// @namespace    https://github.com/NextDev65/
+// @version      0.3
+// @description  hot switch models on ChatGPT
+// @author       NextDev65
 // @match        https://chatgpt.com/*
 // @grant        none
 // ==/UserScript==
-
-(function() {
+(function () {
     'use strict';
 
     // --- Configuration ---
     const STORAGE_KEY = 'preferredChatGPTModel';
     const DEFAULT_MODEL = 'gpt-4o-mini';
-    const AVAILABLE_MODELS = [
+    const MODELS = [
         'gpt-3.5-turbo',
         'gpt-4o',
         'gpt-4o-mini',
         'o4-mini'
     ];
 
-    // --- State ---
-    let preferredModel = localStorage.getItem(STORAGE_KEY) || DEFAULT_MODEL;
 
-    // --- Create Bubble UI ---
-    const bubble = document.createElement('div');
-    bubble.id = 'model-switcher-bubble';
-    bubble.textContent = preferredModel;
-    Object.assign(bubble.style, {
-        position: 'fixed',
-        bottom: '20px',
-        right: '20px',
-        width: '60px',
-        height: '60px',
-        background: '#007bff',
-        color: '#fff',
-        borderRadius: '50%',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        fontSize: '12px',
-        textAlign: 'center',
-        cursor: 'pointer',
-        zIndex: 9999,
-        boxShadow: '0 2px 8px rgba(0,0,0,0.3)'
-    });
-    document.body.appendChild(bubble);
+    function createModelDropdown(currentModel) {
+        const select = document.createElement('select');
+        select.style.marginLeft = '12px';
+        select.style.padding = '4px 8px';
+        select.style.borderRadius = '6px';
+        select.style.border = '1px solid #ccc';
+        select.style.backgroundColor = '#1e1e1e';
+        select.style.color = '#fff';
 
-    // --- Create Dropdown Menu ---
-    const menu = document.createElement('div');
-    menu.id = 'model-switcher-menu';
-    Object.assign(menu.style, {
-        position: 'fixed',
-        bottom: '90px',
-        right: '20px',
-        background: '#2f2f2f',
-        border: '1px solid #ccc',
-        borderRadius: '8px',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-        display: 'none',
-        zIndex: 10000,
-        overflow: 'hidden'
-    });
-    AVAILABLE_MODELS.forEach(model => {
-        const item = document.createElement('div');
-        item.textContent = model;
-        Object.assign(item.style, {
-            padding: '8px 12px',
-            cursor: 'pointer',
-            whiteSpace: 'nowrap'
+        MODELS.forEach(model => {
+            const option = document.createElement('option');
+            option.value = model;
+            option.textContent = model;
+            if (model === currentModel) option.selected = true;
+            select.appendChild(option);
         });
-        item.addEventListener('mouseenter', () => item.style.background = '#424242');
-        item.addEventListener('mouseleave', () => item.style.background = '');
-        item.addEventListener('click', () => {
-            preferredModel = model;
-            localStorage.setItem(STORAGE_KEY, model);
-            bubble.textContent = model;
-            menu.style.display = 'none';
+
+        select.addEventListener('change', () => {
+            localStorage.setItem(STORAGE_KEY, select.value);
         });
-        menu.appendChild(item);
-    });
-    document.body.appendChild(menu);
 
-    // Toggle menu visibility
-    bubble.addEventListener('click', e => {
-        e.stopPropagation();
-        menu.style.display = (menu.style.display === 'none') ? 'block' : 'none';
-    });
-    // Hide menu when clicking outside
-    document.addEventListener('click', e => {
-        if (!bubble.contains(e.target) && !menu.contains(e.target)) {
-            menu.style.display = 'none';
-        }
-    });
+        return select;
+    }
 
-    // --- Monkey-patch fetch for model override ---
-    const originalFetch = window.fetch;
-    window.fetch = async function(resource, config) {
-        // Only intercept conversation requests
-        if (typeof resource === 'string' && resource.includes('/backend-api/conversation') && config && config.body) {
-            try {
-                const body = JSON.parse(config.body);
-                if (body.model && body.model !== preferredModel) {
-                    console.log('[Model Switcher] Overriding model %c%s %cto %c%s', 'color: orange', body.model, 'color: unset', 'color: green', preferredModel);
-                    body.model = preferredModel;
-                    config.body = JSON.stringify(body);
-                }
-            } catch (err) {
-                console.warn('[Model Switcher] Failed to parse request body:', err);
+    function injectModelSelector() {
+        const checkInterval = setInterval(() => {
+            //const header = document.querySelector('header nav'); // Adjust if needed
+            const header = document.querySelectorAll('[data-testid="model-switcher-dropdown-button"]')[1].parentNode.parentNode;
+            if (header && !document.getElementById('chatgpt-model-selector')) {
+                const savedModel = localStorage.getItem(STORAGE_KEY) || DEFAULT_MODEL;
+                const dropdown = createModelDropdown(savedModel);
+                dropdown.id = 'chatgpt-model-selector';
+                header.appendChild(dropdown);
+                clearInterval(checkInterval);
             }
-        }
-        return originalFetch(resource, config);
-    };
+        }, 1000);
+    }
 
+    function overrideModelInRequest() {
+        const origFetch = window.fetch;
+        window.fetch = async (...args) => {
+            const [resource, config] = args;
+            const savedModel = localStorage.getItem(STORAGE_KEY) || DEFAULT_MODEL;
+
+            if (
+                typeof resource === 'string' &&
+                resource.includes('/backend-api/conversation') &&
+                config?.body
+            ) {
+                try {
+                    const body = JSON.parse(config.body);
+                    if (body && body.model) {
+                        body.model = savedModel;
+                        config.body = JSON.stringify(body);
+                    }
+                } catch (e) {}
+            }
+
+            return origFetch(resource, config);
+        };
+    }
+
+    injectModelSelector();
+    overrideModelInRequest();
 })();
