@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - 'ChatGPT-Zero.js'
+  workflow_dispatch:
 
 jobs:
   build-and-release:
@@ -77,7 +78,7 @@ jobs:
             dist/ChatGPT-Zero-chrome-${{ env.VERSION }}.zip
             dist/ChatGPT-Zero-firefox-${{ env.VERSION }}.zip
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_BAR_PAT }}
 
       - name: Clean up
         run: rm -rf dist/build/chrome dist/build/firefox
