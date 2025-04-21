@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ChatGPT Model Switcher
 // @namespace    https://github.com/NextDev65/
-// @version      0.3
+// @version      0.31
 // @description  hot switch models on ChatGPT
 // @author       NextDev65
 // @match        https://chatgpt.com/*
@@ -47,14 +47,21 @@
 
     function injectModelSelector() {
         const checkInterval = setInterval(() => {
-            //const header = document.querySelector('header nav'); // Adjust if needed
-            const header = document.querySelectorAll('[data-testid="model-switcher-dropdown-button"]')[1].parentNode.parentNode;
-            if (header && !document.getElementById('chatgpt-model-selector')) {
+            const nativeModelSwitchers = document.querySelectorAll('[data-testid="model-switcher-dropdown-button"]');
+            let dropdown = document.getElementById('chatgpt-model-switcher');
+            if (!dropdown) {
                 const savedModel = localStorage.getItem(STORAGE_KEY) || DEFAULT_MODEL;
-                const dropdown = createModelDropdown(savedModel);
-                dropdown.id = 'chatgpt-model-selector';
-                header.appendChild(dropdown);
-                clearInterval(checkInterval);
+                dropdown = createModelDropdown(savedModel);
+                dropdown.id = 'chatgpt-model-switcher';
+            }
+            if (!dropdown.checkVisibility()) {
+                for (let nativeModelSwitcher of nativeModelSwitchers) {
+                    if (nativeModelSwitcher.checkVisibility()) {
+                        nativeModelSwitcher.parentNode.after(dropdown);
+                        //clearInterval(checkInterval);
+                        break;
+                    }
+                }
             }
         }, 1000);
     }
