@@ -1,0 +1,18 @@
+{
+  "manifest_version": 2,
+  "name": "ChatGPT Zero",
+  "version": "{{VERSION}}",
+  "description": "Hot switch models on ChatGPT",
+  "permissions": ["https://chatgpt.com/*"],
+  "content_scripts": [
+    {
+      "matches": ["https://chatgpt.com/*"],
+      "js": ["ChatGPT-Zero.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "icons": {
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}

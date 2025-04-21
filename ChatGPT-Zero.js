@@ -1,9 +1,13 @@
 // ==UserScript==
-// @name         ChatGPT Model Switcher
+// @name         ChatGPT Zero
 // @namespace    https://github.com/NextDev65/
-// @version      0.31
+// @version      0.32
 // @description  hot switch models on ChatGPT
 // @author       NextDev65
+// @downloadURL  https://raw.githubusercontent.com/NextDev65/ChatGPT-0/main/ChatGPT-Zero.js
+// @updateURL    https://raw.githubusercontent.com/NextDev65/ChatGPT-0/main/ChatGPT-Zero.js
+// @homepageURL  https://github.com/NextDev65/ChatGPT-0
+// @supportURL   https://github.com/NextDev65/ChatGPT-0
 // @match        https://chatgpt.com/*
 // @grant        none
 // ==/UserScript==

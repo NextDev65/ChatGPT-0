@@ -1,0 +1,83 @@
+name: build-and-release
+
+on:
+  push:
+    paths:
+      - 'ChatGPT-Zero.js'
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-tags: true
+
+      - name: Extract version from userscript
+        id: extract_version
+        run: |
+          VERSION=$(grep '@version' ChatGPT-Zero.js | awk '{ print $3 }')
+          echo "Version found: $VERSION"
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+
+      - name: Check if tag exists
+        id: check_tag
+        run: |
+          if git rev-parse "v$VERSION" >/dev/null 2>&1; then
+            echo "Tag v$VERSION already exists. Skipping release."
+            echo "EXISTS=true" >> $GITHUB_ENV
+          else
+            echo "EXISTS=false" >> $GITHUB_ENV
+          fi
+
+      - name: Exit if tag already exists
+        if: env.EXISTS == 'true'
+        run: exit 0
+
+      - name: Build (Add) UserScript
+        run: |
+          cp ChatGPT-Zero.js dist/ChatGPT-Zero-${VERSION}.js
+
+      - name: Build Chrome Extension
+        run: |
+          BUILD_DIR=dist/build/chrome
+          mkdir -p $BUILD_DIR
+
+          cp -r dist/browser_extension/icons/ $BUILD_DIR/
+          cp ChatGPT-Zero.js $BUILD_DIR/
+
+          TEMPLATE=dist/browser_extension/chrome/manifest.template.json
+          sed "s/{{VERSION}}/$VERSION/" $TEMPLATE > $BUILD_DIR/manifest.json
+
+          cd $BUILD_DIR
+          zip -r ../../ChatGPT-Zero-chrome-${VERSION}.zip .
+          cd ../../..
+
+      - name: Build Firefox Extension
+        run: |
+          BUILD_DIR=dist/build/firefox
+          mkdir -p $BUILD_DIR
+
+          cp -r dist/browser_extension/icons/ $BUILD_DIR/
+          cp ChatGPT-Zero.js $BUILD_DIR/
+
+          TEMPLATE=dist/browser_extension/firefox/manifest.template.json
+          sed "s/{{VERSION}}/$VERSION/" $TEMPLATE > $BUILD_DIR/manifest.json
+
+          cd $BUILD_DIR
+          zip -r ../../ChatGPT-Zero-firefox-${VERSION}.zip .
+          cd ../../..
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ env.VERSION }}
+          files: |
+            dist/ChatGPT-Zero-chrome-${{ env.VERSION }}.zip
+            dist/ChatGPT-Zero-firefox-${{ env.VERSION }}.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Clean up
+        run: rm -rf dist/build/chrome dist/build/firefox
