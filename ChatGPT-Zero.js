@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ChatGPT Zero
 // @namespace    https://github.com/NextDev65/
-// @version      0.34
+// @version      0.35
 // @description  hot switch models on ChatGPT
 // @author       NextDev65
 // @downloadURL  https://raw.githubusercontent.com/NextDev65/ChatGPT-0/main/ChatGPT-Zero.js
@@ -39,15 +39,15 @@
                 background-color: #212121;
                 color: #fff;
                 outline: none;
-                transition: background-color 0.2s ease, box-shadow 0.2s ease;
+                transition: background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             }
             #chatgpt-model-switcher:hover {
                 background-color: #2f2f2f;
-                box-shadow: 0 0 5px 0 #ffffff;
+                box-shadow: 0 0 5px 0 rgba(255, 255, 255, 0.2);
             }
             #chatgpt-model-switcher:focus {
                 outline: none;
-                box-shadow: 0 0 5px 0 #ffffff inset, 0 0 5px 0 #ffffff;
+                box-shadow: 0 0 2.5px 0 rgba(255, 255, 255, 0.5) inset, 0 0 5px 0 rgba(255, 255, 255, 0.5);
             }
         `;
         document.head.appendChild(style);
