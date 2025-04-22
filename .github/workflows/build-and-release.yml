@@ -77,6 +77,7 @@ jobs:
         with:
           tag_name: v${{ env.VERSION }}
           files: |
+            dist/ChatGPT-Zero-${{ env.VERSION }}.js
             dist/ChatGPT-Zero-chrome-${{ env.VERSION }}.zip
             dist/ChatGPT-Zero-firefox-${{ env.VERSION }}.zip
         env:
