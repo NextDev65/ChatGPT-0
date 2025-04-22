@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ChatGPT Zero
 // @namespace    https://github.com/NextDev65/
-// @version      0.33
+// @version      0.34
 // @description  hot switch models on ChatGPT
 // @author       NextDev65
 // @downloadURL  https://raw.githubusercontent.com/NextDev65/ChatGPT-0/main/ChatGPT-Zero.js
@@ -27,20 +27,27 @@
 
     function createModelDropdown(currentModel) {
         const select = document.createElement('select');
-        select.style.marginLeft = '12px';
-        select.style.padding = '4px 8px';
-        select.style.border = 'none';
-        select.style.borderRadius = '6px';
-        select.style.backgroundColor = '#212121';
-        select.style.color = '#fff';
-        select.style.outline = 'none';
-        select.style.transition = 'background-color 0.2s ease';
 
         // Add hover style via a CSS rule
         const style = document.createElement('style');
         style.textContent = `
+            #chatgpt-model-switcher {
+                margin-left: 12px;
+                padding: 4px 8px;
+                border: none;
+                border-radius: 6px;
+                background-color: #212121;
+                color: #fff;
+                outline: none;
+                transition: background-color 0.2s ease, box-shadow 0.2s ease;
+            }
             #chatgpt-model-switcher:hover {
-                background-color: #2f2f2f !important;
+                background-color: #2f2f2f;
+                box-shadow: 0 0 5px 0 #ffffff;
+            }
+            #chatgpt-model-switcher:focus {
+                outline: none;
+                box-shadow: 0 0 5px 0 #ffffff inset, 0 0 5px 0 #ffffff;
             }
         `;
         document.head.appendChild(style);
