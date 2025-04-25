@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ChatGPT Zero
 // @namespace    https://github.com/NextDev65/
-// @version      0.38
+// @version      0.39
 // @description  hot switch models on ChatGPT
 // @author       NextDev65
 // @downloadURL  https://raw.githubusercontent.com/NextDev65/ChatGPT-0/main/ChatGPT-Zero.js
@@ -73,7 +73,7 @@
 
         // Save selection to localStorage on change
         select.addEventListener('change', () => {
-            localStorage.setItem(STORAGE_KEY, select.value);
+            localStorage.setItem(PREFERRED_MODEL_KEY, select.value);
         });
 
         return select;
@@ -90,7 +90,7 @@
 
             // Create switcher if it doesn't exist yet
             if (!switcher) {
-                const savedModel = localStorage.getItem(STORAGE_KEY) || DEFAULT_MODEL;
+                const savedModel = localStorage.getItem(PREFERRED_MODEL_KEY) || DEFAULT_MODEL;
                 switcher = createModelSwitcher(savedModel);
             }
             if (!switcher.checkVisibility()) {
@@ -114,7 +114,7 @@
         const origFetch = window.fetch;
         window.fetch = async (...args) => {
             const [resource, config] = args;
-            const savedModel = localStorage.getItem(STORAGE_KEY) || DEFAULT_MODEL;
+            const savedModel = localStorage.getItem(PREFERRED_MODEL_KEY) || DEFAULT_MODEL;
 
             // Target only conversation API calls
             if (
