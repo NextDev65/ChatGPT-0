@@ -2,10 +2,12 @@ name: build-and-release
 
 on:
   push:
+    branches:
+      - main
     paths:
       - 'ChatGPT-Zero.js'
     tags-ignore:
-      - '*'
+      - '**'
   workflow_dispatch:
 
 jobs:
