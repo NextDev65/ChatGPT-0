@@ -1,10 +1,16 @@
 # ChatGPT-0
-Model switcher for ChatGPT !
+Enhance your ChatGPT experience with simple tools to boost productivity.
+
+## Features
+- **Model Switcher** – Instantly switch between available models
+
 ### TODO
-- better UI/UX
-  - add custom dropdown
-  - add vfx on model selection
-- streamer mode 🎯
-- custom model strings
+- model switcher ✅
+  - custom model strings  
+  - custom dropdown
+  - vfx on model selection
+- streamer mode
+- settings menu 🎯
+- animations toggle
 - add fallback switching with `?model=` URL param
 - switch to semantic versioning (0.37 -> 0.3.7)
