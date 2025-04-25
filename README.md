@@ -7,3 +7,4 @@ Model switcher for ChatGPT !
 - streamer mode 🎯
 - custom model strings
 - add fallback switching with `?model=` URL param
+- switch to semantic versioning (0.37 -> 0.3.7)
