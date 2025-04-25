@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ChatGPT Zero
 // @namespace    https://github.com/NextDev65/
-// @version      0.36
+// @version      0.37
 // @description  hot switch models on ChatGPT
 // @author       NextDev65
 // @downloadURL  https://raw.githubusercontent.com/NextDev65/ChatGPT-0/main/ChatGPT-Zero.js
@@ -11,6 +11,7 @@
 // @match        https://chatgpt.com/*
 // @grant        none
 // ==/UserScript==
+
 (function () {
     'use strict';
 
@@ -25,7 +26,7 @@
     ];
 
 
-    function createModelDropdown(currentModel) {
+    function createModelSwitcher(currentModel) {
         const select = document.createElement('select');
 
         // Add hover style via a CSS rule
@@ -39,12 +40,12 @@
                 background-color: #212121;
                 color: #fff;
                 outline: none;
-                box-shadow: 0 0 0 0 rgba(33, 33, 33, 0.0) inset, 0 0 5px 0 rgba(33, 33, 33, 0);
+                box-shadow: 0 0 0 0 rgba(33, 33, 33, 0) inset, 0 0 5px 0 rgba(33, 33, 33, 0);
                 transition: background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             }
             #chatgpt-model-switcher:hover {
                 background-color: #2f2f2f;
-                box-shadow: 0 0 2.5px 0 rgba(255, 255, 255, 0.0) inset, 0 0 5px 0 rgba(255, 255, 255, 0.2);
+                box-shadow: 0 0 2.5px 0 rgba(255, 255, 255, 0) inset, 0 0 5px 0 rgba(255, 255, 255, 0.2);
             }
             #chatgpt-model-switcher:focus {
                 outline: none;
@@ -68,19 +69,19 @@
         return select;
     }
 
-    function injectModelSelector() {
+    function injectModelSwitcher() {
         const checkInterval = setInterval(() => {
             const nativeModelSwitchers = document.querySelectorAll('[data-testid="model-switcher-dropdown-button"]');
-            let dropdown = document.getElementById('chatgpt-model-switcher');
-            if (!dropdown) {
+            let switcher = document.getElementById('chatgpt-model-switcher');
+            if (!switcher) {
                 const savedModel = localStorage.getItem(STORAGE_KEY) || DEFAULT_MODEL;
-                dropdown = createModelDropdown(savedModel);
-                dropdown.id = 'chatgpt-model-switcher';
+                switcher = createModelSwitcher(savedModel);
+                switcher.id = 'chatgpt-model-switcher';
             }
-            if (!dropdown.checkVisibility()) {
+            if (!switcher.checkVisibility()) {
                 for (let nativeModelSwitcher of nativeModelSwitchers) {
                     if (nativeModelSwitcher.checkVisibility()) {
-                        nativeModelSwitcher.parentNode.after(dropdown);
+                        nativeModelSwitcher.parentNode.after(switcher);
                         //clearInterval(checkInterval);
                         break;
                     }
@@ -113,6 +114,6 @@
         };
     }
 
-    injectModelSelector();
+    injectModelSwitcher();
     overrideModelInRequest();
 })();
