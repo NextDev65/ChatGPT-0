@@ -9,8 +9,8 @@ Enhance your ChatGPT experience with simple tools to boost productivity.
   - [ ] custom model strings  
   - [ ] custom dropdown
   - [ ] vfx on model selection
-- [ ] streamer mode
-- [ ] settings menu 🎯
-- [ ] animations toggle
+- [ ] streamer mode 🎯
+- [x] settings menu
+  - [x] animations toggle
 - [ ] add fallback switching with `?model=` URL param
 - [ ] switch to semantic versioning (0.37 -> 0.3.7)

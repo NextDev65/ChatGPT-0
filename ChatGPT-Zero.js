@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         ChatGPT Zero
 // @namespace    https://github.com/NextDev65/
-// @version      0.39
-// @description  hot switch models on ChatGPT
+// @version      0.40
+// @description  Enhancements for ChatGPT
 // @author       NextDev65
 // @downloadURL  https://raw.githubusercontent.com/NextDev65/ChatGPT-0/main/ChatGPT-Zero.js
 // @updateURL    https://raw.githubusercontent.com/NextDev65/ChatGPT-0/main/ChatGPT-Zero.js
@@ -17,28 +17,311 @@
 
     // --- Configuration ---
     const PREFERRED_MODEL_KEY = 'preferredChatGPTModel';
+    const SETTINGS_KEY = 'chatgptZeroSettings';
     const DEFAULT_MODEL = 'gpt-4o-mini';
     const MODELS = [
         'gpt-3.5-turbo',
-        'gpt-4o',
         'gpt-4o-mini',
+        'gpt-4-1-mini',
+        'gpt-4o',
         'o4-mini'
     ];
 
-    /**
-     * Creates and returns a <select> element configured as the model switcher.
-     * @param {string} currentModel - Model to pre-select in the dropdown.
-     * @returns {HTMLSelectElement}
-     */
-    function createModelSwitcher(currentModel) {
-        const select = document.createElement('select');
-        select.id = 'chatgpt-model-switcher';
+    // Default settings
+    const DEFAULT_SETTINGS = {
+        modelSwitcher: true,
+        animations: true
+    };
 
-        // Inject CSS for base styling, hover, focus, and transition effects
+    // Load settings from localStorage
+    function loadSettings() {
+        try {
+            const saved = localStorage.getItem(SETTINGS_KEY);
+            return saved ? { ...DEFAULT_SETTINGS, ...JSON.parse(saved) } : { ...DEFAULT_SETTINGS };
+        } catch (e) {
+            console.warn('Failed to load settings, using defaults', e);
+            return { ...DEFAULT_SETTINGS };
+        }
+    }
+
+    // Save settings to localStorage
+    function saveSettings(settings) {
+        try {
+            localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+        } catch (e) {
+            console.warn('Failed to save settings', e);
+        }
+    }
+
+    // Global settings object
+    let settings = loadSettings();
+
+    /**
+     * Creates a toggle switch element
+     * @param {string} label - The label text for the toggle
+     * @param {boolean} checked - Initial checked state
+     * @param {Function} onChange - Callback when toggle changes
+     * @returns {HTMLDivElement}
+     */
+    function createToggleSwitch(label, checked, onChange) {
+        const container = document.createElement('div');
+        container.className = 'toggle-container';
+
+        const labelElement = document.createElement('label');
+        labelElement.className = 'toggle-label';
+        labelElement.textContent = label;
+
+        const switchContainer = document.createElement('label');
+        switchContainer.className = 'toggle-switch';
+
+        const input = document.createElement('input');
+        input.type = 'checkbox';
+        input.checked = checked;
+        input.className = 'toggle-input';
+        input.addEventListener('change', onChange);
+
+        const slider = document.createElement('span');
+        slider.className = 'toggle-slider';
+
+        switchContainer.appendChild(input);
+        switchContainer.appendChild(slider);
+        container.appendChild(labelElement);
+        container.appendChild(switchContainer);
+
+        return container;
+    }
+
+    /**
+     * Creates and returns a <button> element with an attached settings menu.
+     * @returns {HTMLButtonElement}
+     */
+    function createSettingsMenu() {
+        const cog = document.createElement('button');
+        cog.id = 'settings-cog';
+        cog.textContent = '⚙️';
+        cog.setAttribute('aria-label', 'Settings');
+
+        const menu = document.createElement('div');
+        menu.id = 'settings-menu';
+        menu.className = 'settings-dropdown';
+        menu.style.display = 'none';
+
+        // Create toggle switches
+        const modelSwitcherToggle = createToggleSwitch('Model Switcher', settings.modelSwitcher, (e) => {
+            settings.modelSwitcher = e.target.checked;
+            saveSettings(settings);
+            updateModelSwitcherVisibility();
+        });
+
+        const animationsToggle = createToggleSwitch('Animations', settings.animations, (e) => {
+            settings.animations = e.target.checked;
+            saveSettings(settings);
+            updateAnimationStyles();
+        });
+
+        menu.appendChild(modelSwitcherToggle);
+        menu.appendChild(animationsToggle);
+
+        // Append menu to body to avoid positioning issues
+        document.body.appendChild(menu);
+
+        // Toggle menu visibility
+        cog.addEventListener('click', (e) => {
+            e.stopPropagation();
+            //const isVisible = window.getComputedStyle(menu).display !== 'none';
+            if (menu.style.display === 'block')
+            {
+                menu.style.display = 'none';
+            }
+            else {
+                positionMenu();
+                menu.style.display = 'block';
+            }
+        });
+
+        // Close menu when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!cog.contains(e.target) && !menu.contains(e.target)) {
+                menu.style.display = 'none';
+            }
+        });
+
+        // Position menu relative to cog
+        function positionMenu() {
+            const cogRect = cog.getBoundingClientRect();
+            menu.style.position = 'fixed';
+            menu.style.top = `${cogRect.bottom + 5}px`;
+            menu.style.left = `${cogRect.left}px`;
+            menu.style.zIndex = '10000';
+        }
+
+        // Inject CSS for settings menu and toggle switches
+        injectSettingsStyles();
+
+        return cog;
+    }
+
+    /**
+     * Injects CSS styles for the settings menu and components
+     */
+    function injectSettingsStyles() {
+        if (document.getElementById('settings-styles')) return;
+
         const style = document.createElement('style');
+        style.id = 'settings-styles';
+
+        const animationStyles = settings.animations ? `
+            transition: background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+                        box-shadow 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        ` : '';
+
+        const toggleAnimationStyles = settings.animations ? `
+            transition: 0.3s;
+        ` : '';
+
+        style.textContent = `
+            #settings-cog {
+                font-size: 20px;
+                margin-left: 12px;
+                padding: 4px;
+                border: none;
+                border-radius: 50%;
+                background-color: #212121;
+                color: #fff;
+                cursor: pointer;
+                box-shadow: 0 0 0 0 rgba(33, 33, 33, 0) inset, 0 0 5px 0 rgba(33, 33, 33, 0);
+                ${animationStyles}
+            }
+            #settings-cog:hover {
+                background-color: #2f2f2f;
+                box-shadow: 0 0 2.5px 0 rgba(255, 255, 255, 0) inset,
+                            0 0 5px 0 rgba(255, 255, 255, 0.2);
+            }
+            #settings-cog:focus {
+                outline: none;
+                box-shadow: 0 0 2.5px 0 rgba(255, 255, 255, 0.5) inset,
+                            0 0 5px 0 rgba(255, 255, 255, 0.5);
+            }
+
+            .settings-dropdown {
+                display: none;
+                background-color: #2a2a2a;
+                border: 1px solid #444;
+                border-radius: 8px;
+                padding: 12px;
+                min-width: 200px;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            }
+
+
+            .toggle-container {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 12px;
+            }
+            .toggle-container:last-child {
+                margin-bottom: 0;
+            }
+
+            .toggle-label {
+                color: #fff;
+                font-size: 14px;
+            }
+
+            .toggle-switch {
+                position: relative;
+                display: inline-block;
+                width: 44px;
+                height: 24px;
+            }
+
+            .toggle-input {
+                position: absolute;
+                opacity: 0;
+                width: 100%;
+                height: 100%;
+                cursor: pointer;
+                z-index: 1;
+            }
+            .toggle-input:checked + .toggle-slider {
+                background-color: #4CAF50;
+            }
+            .toggle-input:checked + .toggle-slider:before {
+                transform: translateX(20px);
+            }
+            .toggle-input:checked + .toggle-slider:hover {
+                background-color: #45a049;
+            }
+
+            .toggle-slider {
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background-color: #555;
+                border-radius: 24px;
+                ${toggleAnimationStyles}
+            }
+            .toggle-slider:before {
+                content: "";
+                position: absolute;
+                height: 18px;
+                width: 18px;
+                left: 3px;
+                bottom: 3px;
+                background-color: white;
+                border-radius: 50%;
+                ${toggleAnimationStyles}
+            }
+        `;
+        document.head.appendChild(style);
+    }
+
+    /**
+     * Updates animation styles based on current settings
+     */
+    function updateAnimationStyles() {
+        // Remove existing styles and re-inject with updated animation settings
+        document.getElementById('settings-styles')?.remove();
+        document.getElementById('model-switcher-styles')?.remove();
+
+        injectSettingsStyles();
+        // Re-inject model switcher styles if it exists
+        const modelSwitcher = document.getElementById('chatgpt-model-switcher');
+        if (modelSwitcher) {
+            injectModelSwitcherStyles();
+        }
+    }
+
+    /**
+     * Updates model switcher visibility based on settings
+     */
+    function updateModelSwitcherVisibility() {
+        const modelSwitcher = document.getElementById('chatgpt-model-switcher');
+        if (modelSwitcher) {
+            modelSwitcher.style.display = settings.modelSwitcher ? 'block' : 'none';
+        }
+    }
+
+    /**
+     * Injects CSS styles for the model switcher
+     */
+    function injectModelSwitcherStyles() {
+        if (document.getElementById('model-switcher-styles')) return;
+
+        const style = document.createElement('style');
+        style.id = 'model-switcher-styles';
+
+        const animationStyles = settings.animations ? `
+            transition: background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+                        box-shadow 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        ` : '';
+
         style.textContent = `
             #chatgpt-model-switcher {
-                margin-left: 12px;
+                margin: auto;
                 padding: 4px 8px;
                 border: none;
                 border-radius: 6px;
@@ -46,8 +329,7 @@
                 color: #fff;
                 outline: none;
                 box-shadow: 0 0 0 0 rgba(33, 33, 33, 0) inset, 0 0 5px 0 rgba(33, 33, 33, 0);
-                transition: background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1),
-                            box-shadow 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+                ${animationStyles}
             }
             #chatgpt-model-switcher:hover {
                 background-color: #2f2f2f;
@@ -61,6 +343,19 @@
             }
         `;
         document.head.appendChild(style);
+    }
+
+    /**
+     * Creates and returns a <select> element configured as the model switcher.
+     * @param {string} currentModel - Model to pre-select in the dropdown.
+     * @returns {HTMLSelectElement}
+     */
+    function createModelSwitcher(currentModel) {
+        const select = document.createElement('select');
+        select.id = 'chatgpt-model-switcher';
+
+        // Inject CSS for base styling, hover, focus, and transition effects
+        injectModelSwitcherStyles();
 
         // Populate dropdown with model options
         MODELS.forEach(model => {
@@ -76,7 +371,30 @@
             localStorage.setItem(PREFERRED_MODEL_KEY, select.value);
         });
 
+        // Set initial visibility based on settings
+        select.style.display = settings.modelSwitcher ? 'block' : 'none';
+
         return select;
+    }
+
+    /**
+     * Finds our model switcher in the UI and inserts the settings cog after it.
+     * Retries every second until our model switcher is visible.
+     */
+    function injectSettingsMenu() {
+        const checkInterval = setInterval(() => {
+            const modelSwitcher = document.getElementById('chatgpt-model-switcher');
+            let cog = document.getElementById('settings-cog');
+
+            // Create cog if it doesn't exist yet
+            if (!cog) {
+                cog = createSettingsMenu();
+            }
+            // Insert cog after visible model switcher
+            if (modelSwitcher && !cog.parentNode && modelSwitcher.parentNode) {
+                modelSwitcher.parentNode.insertBefore(cog, modelSwitcher.nextSibling);
+            }
+        }, 1000);
     }
 
     /**
@@ -88,17 +406,16 @@
             const nativeModelSwitchers = document.querySelectorAll('[data-testid="model-switcher-dropdown-button"]');
             let switcher = document.getElementById('chatgpt-model-switcher');
 
-            // Create switcher if it doesn't exist yet
+            // Create switcher
             if (!switcher) {
                 const savedModel = localStorage.getItem(PREFERRED_MODEL_KEY) || DEFAULT_MODEL;
                 switcher = createModelSwitcher(savedModel);
             }
-            if (!switcher.checkVisibility()) {
             // Insert switcher next to the first visible native button
+            if (!switcher.parentNode) {
                 for (let nativeModelSwitcher of nativeModelSwitchers) {
-                    if (nativeModelSwitcher.checkVisibility()) {
+                    if (nativeModelSwitcher.checkVisibility && nativeModelSwitcher.checkVisibility()) {
                         nativeModelSwitcher.parentNode.after(switcher);
-                        //clearInterval(checkInterval);
                         break;
                     }
                 }
@@ -111,6 +428,9 @@
      * property in the request body with the user-selected model.
      */
     function overrideModelInRequest() {
+        // Only override if model switcher is enabled
+        if (!settings.modelSwitcher) return;
+
         const origFetch = window.fetch;
         window.fetch = async (...args) => {
             const [resource, config] = args;
@@ -119,7 +439,7 @@
             // Target only conversation API calls
             if (
                 typeof resource === 'string' &&
-                resource.includes('/backend-api/conversation') &&
+                resource.includes('/backend-api/f/conversation') &&
                 config?.body
             ) {
                 try {
@@ -138,6 +458,8 @@
         };
     }
 
+    // Initialize the userscript
     injectModelSwitcher();
     overrideModelInRequest();
+    injectSettingsMenu();
 })();
