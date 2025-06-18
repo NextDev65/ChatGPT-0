@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "ChatGPT Zero",
   "version": "{{VERSION}}",
-  "description": "Hot switch models on ChatGPT",
+  "description": "Enhance your ChatGPT experience with simple tools to boost productivity.",
   "permissions": [],
   "host_permissions": ["https://chatgpt.com/*"],
   "content_scripts": [
