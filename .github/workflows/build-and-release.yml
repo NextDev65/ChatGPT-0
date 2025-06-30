@@ -40,6 +40,14 @@ jobs:
         if: env.EXISTS == 'true'
         run: exit 0
 
+      - name: Get last commit message
+        id: get_commit_msg
+        run: |
+          # Capture the full commit message (including line breaks)
+          echo "message<<EOF" >> $GITHUB_OUTPUT
+          git log -1 --pretty=%B >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
       - name: Build (Add) UserScript
         run: |
           cp ChatGPT-Zero.js dist/ChatGPT-Zero-${VERSION}.js
@@ -82,6 +90,7 @@ jobs:
             dist/ChatGPT-Zero-${{ env.VERSION }}.js
             dist/ChatGPT-Zero-chrome-${{ env.VERSION }}.zip
             dist/ChatGPT-Zero-firefox-${{ env.VERSION }}.zip
+          body: ${{ steps.get_commit_msg.outputs.message }}
         env:
           GITHUB_TOKEN: ${{ secrets.GH_BAR_PAT }}
 
