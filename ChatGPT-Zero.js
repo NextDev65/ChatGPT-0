@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ChatGPT Zero
 // @namespace    https://github.com/NextDev65/
-// @version      0.40
+// @version      0.41
 // @description  Enhancements for ChatGPT
 // @author       NextDev65
 // @downloadURL  https://raw.githubusercontent.com/NextDev65/ChatGPT-0/main/ChatGPT-Zero.js
@@ -98,7 +98,7 @@
     function createSettingsMenu() {
         const cog = document.createElement('button');
         cog.id = 'settings-cog';
-        cog.textContent = '⚙️';
+        cog.textContent = settings.animations ? '⚙️' : '⚙';
         cog.setAttribute('aria-label', 'Settings');
 
         const menu = document.createElement('div');
@@ -170,112 +170,112 @@
         const style = document.createElement('style');
         style.id = 'settings-styles';
 
-        const animationStyles = settings.animations ? `
-            transition: background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1),
-                        box-shadow 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        ` : '';
-
-        const toggleAnimationStyles = settings.animations ? `
-            transition: 0.3s;
-        ` : '';
-
         style.textContent = `
-            #settings-cog {
-                font-size: 20px;
-                margin-left: 12px;
-                padding: 4px;
-                border: none;
-                border-radius: 50%;
-                background-color: #212121;
-                color: #fff;
-                cursor: pointer;
-                box-shadow: 0 0 0 0 rgba(33, 33, 33, 0) inset, 0 0 5px 0 rgba(33, 33, 33, 0);
-                ${animationStyles}
-            }
-            #settings-cog:hover {
-                background-color: #2f2f2f;
-                box-shadow: 0 0 2.5px 0 rgba(255, 255, 255, 0) inset,
-                            0 0 5px 0 rgba(255, 255, 255, 0.2);
-            }
-            #settings-cog:focus {
-                outline: none;
-                box-shadow: 0 0 2.5px 0 rgba(255, 255, 255, 0.5) inset,
-                            0 0 5px 0 rgba(255, 255, 255, 0.5);
-            }
+    #settings-cog {
+        font-size: 20px;
+        margin-left: 12px;
+        padding: 4px;
+        border: none;
+        border-radius: 50%;
+        background-color: #212121;
+        color: #fff;
+        cursor: pointer;
+        box-shadow: 0 0 0 0 rgba(33, 33, 33, 0) inset,
+                    0 0 5px 0 rgba(33, 33, 33, 0);
+        ${settings.animations ? `
+        transition: background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+                    box-shadow 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        ` : ''}
+    }
+    #settings-cog:hover {
+        background-color: #2f2f2f;
+        box-shadow: 0 0 2.5px 0 rgba(255, 255, 255, 0) inset,
+                    0 0 5px 0 rgba(255, 255, 255, 0.2);
+    }
+    #settings-cog:focus {
+        outline: none;
+        box-shadow: 0 0 2.5px 0 rgba(255, 255, 255, 0.5) inset,
+                    0 0 5px 0 rgba(255, 255, 255, 0.5);
+    }
 
-            .settings-dropdown {
-                display: none;
-                background-color: #2a2a2a;
-                border: 1px solid #444;
-                border-radius: 8px;
-                padding: 12px;
-                min-width: 200px;
-                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-            }
+    .settings-dropdown {
+        display: none;
+        background-color: #2a2a2a;
+        border: 1px solid #444;
+        border-radius: 8px;
+        padding: 12px;
+        min-width: 200px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
 
 
-            .toggle-container {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                margin-bottom: 12px;
-            }
-            .toggle-container:last-child {
-                margin-bottom: 0;
-            }
+    .toggle-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+    }
+    .toggle-container:last-child {
+        margin-bottom: 0;
+    }
 
-            .toggle-label {
-                color: #fff;
-                font-size: 14px;
-            }
+    .toggle-label {
+        color: #fff;
+        font-size: 14px;
+    }
 
-            .toggle-switch {
-                position: relative;
-                display: inline-block;
-                width: 44px;
-                height: 24px;
-            }
+    .toggle-switch {
+        position: relative;
+        display: inline-block;
+        width: 44px;
+        height: 24px;
+    }
 
-            .toggle-input {
-                position: absolute;
-                opacity: 0;
-                width: 100%;
-                height: 100%;
-                cursor: pointer;
-                z-index: 1;
-            }
-            .toggle-input:checked + .toggle-slider {
-                background-color: #4CAF50;
-            }
-            .toggle-input:checked + .toggle-slider:before {
-                transform: translateX(20px);
-            }
-            .toggle-input:checked + .toggle-slider:hover {
-                background-color: #45a049;
-            }
+    .toggle-input {
+        position: absolute;
+        opacity: 0;
+        width: 100%;
+        height: 100%;
+        cursor: pointer;
+        z-index: 1;
+    }
+    .toggle-input:checked + .toggle-slider {
+        background-color: #4CAF50;
+    }
+    .toggle-input:checked + .toggle-slider:before {
+        transform: translateX(20px);
+    }
+    .toggle-input:checked + .toggle-slider:hover {
+        background-color: #45a049;
+    }
 
-            .toggle-slider {
-                position: absolute;
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                background-color: #555;
-                border-radius: 24px;
-                ${toggleAnimationStyles}
-            }
-            .toggle-slider:before {
-                content: "";
-                position: absolute;
-                height: 18px;
-                width: 18px;
-                left: 3px;
-                bottom: 3px;
-                background-color: white;
-                border-radius: 50%;
-                ${toggleAnimationStyles}
-            }
-        `;
+    .toggle-slider {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #555;
+        border-radius: 24px;
+        ${settings.animations ? `
+        transition: background-color 0.3s cubic-bezier(0.68, -0.1, 0.27, 1.1),
+                    transform 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+        ` : ''}
+    }
+    .toggle-slider:before {
+        content: "";
+        position: absolute;
+        height: 18px;
+        width: 18px;
+        left: 3px;
+        bottom: 3px;
+        background-color: white;
+        border-radius: 50%;
+        ${settings.animations ? `
+        transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+        ` : ''}
+    }
+`;
         document.head.appendChild(style);
     }
 
@@ -314,34 +314,33 @@
         const style = document.createElement('style');
         style.id = 'model-switcher-styles';
 
-        const animationStyles = settings.animations ? `
-            transition: background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1),
-                        box-shadow 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        ` : '';
-
         style.textContent = `
-            #chatgpt-model-switcher {
-                margin: auto;
-                padding: 4px 8px;
-                border: none;
-                border-radius: 6px;
-                background-color: #212121;
-                color: #fff;
-                outline: none;
-                box-shadow: 0 0 0 0 rgba(33, 33, 33, 0) inset, 0 0 5px 0 rgba(33, 33, 33, 0);
-                ${animationStyles}
-            }
-            #chatgpt-model-switcher:hover {
-                background-color: #2f2f2f;
-                box-shadow: 0 0 2.5px 0 rgba(255, 255, 255, 0) inset,
-                            0 0 5px 0 rgba(255, 255, 255, 0.2);
-            }
-            #chatgpt-model-switcher:focus {
-                outline: none;
-                box-shadow: 0 0 2.5px 0 rgba(255, 255, 255, 0.5) inset,
-                            0 0 5px 0 rgba(255, 255, 255, 0.5);
-            }
-        `;
+    #chatgpt-model-switcher {
+        margin: auto;
+        padding: 4px 8px;
+        border: none;
+        border-radius: 6px;
+        background-color: #212121;
+        color: #fff;
+        outline: none;
+        box-shadow: 0 0 0 0 rgba(33, 33, 33, 0) inset,
+                    0 0 5px 0 rgba(33, 33, 33, 0);
+        ${settings.animations ? `
+        transition: background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+                    box-shadow 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        ` : ''}
+    }
+    #chatgpt-model-switcher:hover {
+        background-color: #2f2f2f;
+        box-shadow: 0 0 2.5px 0 rgba(255, 255, 255, 0) inset,
+                    0 0 5px 0 rgba(255, 255, 255, 0.2);
+    }
+    #chatgpt-model-switcher:focus {
+        outline: none;
+        box-shadow: 0 0 2.5px 0 rgba(255, 255, 255, 0.5) inset,
+                    0 0 5px 0 rgba(255, 255, 255, 0.5);
+    }
+`;
         document.head.appendChild(style);
     }
 
