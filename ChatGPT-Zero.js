@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ChatGPT Zero
 // @namespace    https://github.com/NextDev65/
-// @version      0.41
+// @version      0.42
 // @description  Enhancements for ChatGPT
 // @author       NextDev65
 // @downloadURL  https://raw.githubusercontent.com/NextDev65/ChatGPT-0/main/ChatGPT-Zero.js
@@ -98,7 +98,7 @@
     function createSettingsMenu() {
         const cog = document.createElement('button');
         cog.id = 'settings-cog';
-        cog.textContent = settings.animations ? '⚙️' : '⚙';
+        //cog.textContent = settings.animations ? '⚙️' : '⚙';
         cog.setAttribute('aria-label', 'Settings');
 
         const menu = document.createElement('div');
@@ -149,10 +149,56 @@
         // Position menu relative to cog
         function positionMenu() {
             const cogRect = cog.getBoundingClientRect();
+            const viewportWidth = window.innerWidth;
+
             menu.style.position = 'fixed';
             menu.style.top = `${cogRect.bottom + 5}px`;
-            menu.style.left = `${cogRect.left}px`;
             menu.style.zIndex = '10000';
+
+            if (!settings.animations) {
+                // Temporarily show menu offscreen to measure width
+                menu.style.visibility = 'hidden';
+                menu.style.display = 'block';
+                menu.style.left = '0px';
+                menu.style.right = 'auto';
+
+                const menuWidth = menu.offsetWidth;
+
+                // Calculate left position with clamping to viewport
+                let left = cogRect.left;
+                if (left + menuWidth > viewportWidth) {
+                    left = viewportWidth - menuWidth - 5; // 5px padding from edge
+                }
+
+                // Apply final position and show menu visibly
+                menu.style.left = `${left}px`;
+                menu.style.visibility = 'visible';
+                // Don't change display here; caller controls show/hide
+                menu.style.opacity = '1';        // fully visible
+                menu.style.transform = 'none';
+                menu.style.transition = '';      // kill any animation
+            } else {
+                // Animations enabled: slide/fade in from right, ending with right edges aligned
+                const cogRight = cogRect.left + cogRect.width;
+                const rightOffset = viewportWidth - cogRight;
+
+                // prepare initial state
+                menu.style.right = `${rightOffset}px`;
+                menu.style.left = 'auto';
+                menu.style.opacity = '0';
+                menu.style.transform = 'translateX(10px)';
+                menu.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+
+                /*// force a reflow so the browser registers the start state
+                // eslint-disable-next-line @microsoft/sdl/no-document-domain -- reflow hack
+                void menu.offsetWidth;*/
+
+                // then slide into place, Animate on next frame
+                requestAnimationFrame(() => {
+                    menu.style.opacity = '1';
+                    menu.style.transform = 'translateX(0)';
+                });
+            }
         }
 
         // Inject CSS for settings menu and toggle switches
@@ -174,7 +220,7 @@
     #settings-cog {
         font-size: 20px;
         margin-left: 12px;
-        padding: 4px;
+        padding: 4px 5px;
         border: none;
         border-radius: 50%;
         background-color: #212121;
@@ -182,20 +228,37 @@
         cursor: pointer;
         box-shadow: 0 0 0 0 rgba(33, 33, 33, 0) inset,
                     0 0 5px 0 rgba(33, 33, 33, 0);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        transform: translateX(0.75px) translateY(-0.75px);
         ${settings.animations ? `
         transition: background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1),
                     box-shadow 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        ` : ''}
+        ${settings.animations ? `
+        transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55);
         ` : ''}
     }
     #settings-cog:hover {
         background-color: #2f2f2f;
         box-shadow: 0 0 2.5px 0 rgba(255, 255, 255, 0) inset,
                     0 0 5px 0 rgba(255, 255, 255, 0.2);
+        ${settings.animations ? `
+        transform: translateX(0.75px) translateY(-0.75px) rotate(45deg);
+        ` : ''}
     }
     #settings-cog:focus {
         outline: none;
         box-shadow: 0 0 2.5px 0 rgba(255, 255, 255, 0.5) inset,
                     0 0 5px 0 rgba(255, 255, 255, 0.5);
+    }
+
+    #settings-cog::before {
+        content: '${settings.animations ? '⚙️' : '⚙'}';
+        transform-origin: center;
+        transform: translateX(0.75px) translateY(-0.75px);
     }
 
     .settings-dropdown {
@@ -323,9 +386,9 @@
         background-color: #212121;
         color: #fff;
         outline: none;
+        ${settings.animations ? `
         box-shadow: 0 0 0 0 rgba(33, 33, 33, 0) inset,
                     0 0 5px 0 rgba(33, 33, 33, 0);
-        ${settings.animations ? `
         transition: background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1),
                     box-shadow 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         ` : ''}
