@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ChatGPT Zero
 // @namespace    https://github.com/NextDev65/
-// @version      0.43
+// @version      0.5
 // @description  Enhancements for ChatGPT
 // @author       NextDev65
 // @downloadURL  https://raw.githubusercontent.com/NextDev65/ChatGPT-0/main/ChatGPT-Zero.js
@@ -33,6 +33,7 @@
     // Default settings
     const DEFAULT_SETTINGS = {
         modelSwitcher: true,
+        streamerMode: true,
         animations: true
     };
 
@@ -115,6 +116,16 @@
             saveSettings(settings);
             updateModelSwitcherVisibility();
         });
+        
+        const streamerModeToggle = createToggleSwitch(
+          'Streamer Mode',
+          settings.streamerMode ?? true,
+          (e) => {
+            settings.streamerMode = e.target.checked;
+            saveSettings(settings);
+            updateStreamerModeStyles();
+          }
+        );
 
         const animationsToggle = createToggleSwitch('Animations', settings.animations, (e) => {
             settings.animations = e.target.checked;
@@ -123,6 +134,7 @@
         });
 
         menu.appendChild(modelSwitcherToggle);
+        menu.appendChild(streamerModeToggle);
         menu.appendChild(animationsToggle);
 
         // Append menu to body to avoid positioning issues
@@ -151,13 +163,14 @@
 
         // Position menu relative to cog
         function positionMenu() {
-            // changes when cog is rotated (animations enabled) -> alignment inconsistencies
+            // cog bounds, changes when cog is rotated (animations enabled) -> alignment inconsistencies
             const cogRect = cog.getBoundingClientRect();
+            // page header bounds
             const parentRect = cog.parentElement.getBoundingClientRect();
             const viewportWidth = window.innerWidth;
 
             menu.style.position = 'fixed';
-            menu.style.top = `${parentRect.bottom - 5}px`; // 5px under `page-header`
+            menu.style.top = `${parentRect.bottom - 5}px`; // 5px above `page-header`
             menu.style.zIndex = '10000';
             
             const cogRight = cogRect.left + cogRect.width;
@@ -340,6 +353,49 @@
         if (modelSwitcher) {
             injectModelSwitcherStyles();
         }
+        if (settings.streamerMode) {
+            updateStreamerModeStyles();
+        }
+    }
+
+    function updateStreamerModeStyles() {
+        injectStreamerModeStyles();
+    }
+
+    function injectStreamerModeStyles() {
+        // Remove old rules
+        document.getElementById('streamer-styles')?.remove();
+
+        if (!settings.streamerMode) return;  // nothing to do if disabled
+
+        const style = document.createElement('style');
+        style.id = 'streamer-styles';
+
+        style.textContent = `
+        /* inactive chats */
+        #history .__menu-item:not([data-active]) {
+            box-shadow: 0 0 2.5px 0 rgba(255, 255, 255, 0) inset,
+                        0 0 5px 0 rgba(255, 255, 255, 0.2);
+            ${settings.animations ? `
+            transition: background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+                        box-shadow 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            ` : ''}
+        }
+        
+        /* inactive chat titles */
+        #history .__menu-item:not([data-active]) .truncate span {
+            opacity: 0;
+            ${settings.animations ? `
+            transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+                        box-shadow 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            ` : ''}
+        }
+        #history .__menu-item:not([data-active]):hover .truncate span {
+            opacity: 1;
+        }
+        `;
+
+        document.head.appendChild(style);
     }
 
     /**
@@ -508,4 +564,6 @@
     injectModelSwitcher();
     overrideModelInRequest();
     injectSettingsMenu();
+    updateStreamerModeStyles();
+
 })();
