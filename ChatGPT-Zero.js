@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ChatGPT Zero
 // @namespace    https://github.com/NextDev65/
-// @version      0.42
+// @version      0.43
 // @description  Enhancements for ChatGPT
 // @author       NextDev65
 // @downloadURL  https://raw.githubusercontent.com/NextDev65/ChatGPT-0/main/ChatGPT-Zero.js
@@ -21,6 +21,9 @@
     const DEFAULT_MODEL = 'gpt-4o-mini';
     const MODELS = [
         'gpt-3.5-turbo',
+        'text-davinci-002-render-sha',
+        'text-davinci-002-render-sha-mobile',
+        'gpt-4-mobile',
         'gpt-4o-mini',
         'gpt-4-1-mini',
         'gpt-4o',
@@ -148,43 +151,22 @@
 
         // Position menu relative to cog
         function positionMenu() {
+            // changes when cog is rotated (animations enabled) -> alignment inconsistencies
             const cogRect = cog.getBoundingClientRect();
+            const parentRect = cog.parentElement.getBoundingClientRect();
             const viewportWidth = window.innerWidth;
 
             menu.style.position = 'fixed';
-            menu.style.top = `${cogRect.bottom + 5}px`;
+            menu.style.top = `${parentRect.bottom - 5}px`; // 5px under `page-header`
             menu.style.zIndex = '10000';
+            
+            const cogRight = cogRect.left + cogRect.width;
+            const rightOffset = viewportWidth - cogRight;
 
-            if (!settings.animations) {
-                // Temporarily show menu offscreen to measure width
-                menu.style.visibility = 'hidden';
-                menu.style.display = 'block';
-                menu.style.left = '0px';
-                menu.style.right = 'auto';
-
-                const menuWidth = menu.offsetWidth;
-
-                // Calculate left position with clamping to viewport
-                let left = cogRect.left;
-                if (left + menuWidth > viewportWidth) {
-                    left = viewportWidth - menuWidth - 5; // 5px padding from edge
-                }
-
-                // Apply final position and show menu visibly
-                menu.style.left = `${left}px`;
-                menu.style.visibility = 'visible';
-                // Don't change display here; caller controls show/hide
-                menu.style.opacity = '1';        // fully visible
-                menu.style.transform = 'none';
-                menu.style.transition = '';      // kill any animation
-            } else {
-                // Animations enabled: slide/fade in from right, ending with right edges aligned
-                const cogRight = cogRect.left + cogRect.width;
-                const rightOffset = viewportWidth - cogRight;
-
-                // prepare initial state
-                menu.style.right = `${rightOffset}px`;
-                menu.style.left = 'auto';
+            // prepare initial state
+            menu.style.right = `${rightOffset}px`;
+            menu.style.left = 'auto';
+            if (settings.animations) {
                 menu.style.opacity = '0';
                 menu.style.transform = 'translateX(10px)';
                 menu.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
@@ -193,7 +175,7 @@
                 // eslint-disable-next-line @microsoft/sdl/no-document-domain -- reflow hack
                 void menu.offsetWidth;*/
 
-                // then slide into place, Animate on next frame
+                // slide into place
                 requestAnimationFrame(() => {
                     menu.style.opacity = '1';
                     menu.style.transform = 'translateX(0)';
@@ -247,7 +229,9 @@
                     0 0 5px 0 rgba(255, 255, 255, 0.2);
         ${settings.animations ? `
         transform: translateX(0.75px) translateY(-0.75px) rotate(45deg);
-        ` : ''}
+        ` : `
+        transform: translateX(0.75px) translateY(-0.75px);
+        `}
     }
     #settings-cog:focus {
         outline: none;
