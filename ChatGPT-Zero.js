@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ChatGPT Zero
 // @namespace    https://github.com/NextDev65/
-// @version      0.5
+// @version      0.51
 // @description  Enhancements for ChatGPT
 // @author       NextDev65
 // @downloadURL  https://raw.githubusercontent.com/NextDev65/ChatGPT-0/main/ChatGPT-Zero.js
@@ -229,17 +229,15 @@
         position: relative;
         transform: translateX(0.75px) translateY(-0.75px);
         ${settings.animations ? `
-        transition: background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1),
-                    box-shadow 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        ` : ''}
-        ${settings.animations ? `
-        transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+        transition: background-color 0.2s cubic-bezier(0.4,  0,     0.2,  1),
+                    box-shadow       0.4s cubic-bezier(0.4,  0,     0.2,  1),
+                    transform        0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55);
         ` : ''}
     }
     #settings-cog:hover {
         background-color: #2f2f2f;
         box-shadow: 0 0 2.5px 0 rgba(255, 255, 255, 0) inset,
-                    0 0 5px 0 rgba(255, 255, 255, 0.2);
+                    0 0 5px   0 rgba(255, 255, 255, 0.2);
         ${settings.animations ? `
         transform: translateX(0.75px) translateY(-0.75px) rotate(45deg);
         ` : `
@@ -249,7 +247,7 @@
     #settings-cog:focus {
         outline: none;
         box-shadow: 0 0 2.5px 0 rgba(255, 255, 255, 0.5) inset,
-                    0 0 5px 0 rgba(255, 255, 255, 0.5);
+                    0 0 5px   0 rgba(255, 255, 255, 0.5);
     }
 
     #settings-cog::before {
