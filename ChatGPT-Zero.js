@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ChatGPT Zero
 // @namespace    https://github.com/NextDev65/
-// @version      0.51
+// @version      0.52
 // @description  Enhancements for ChatGPT
 // @author       NextDev65
 // @downloadURL  https://raw.githubusercontent.com/NextDev65/ChatGPT-0/main/ChatGPT-Zero.js
@@ -27,6 +27,7 @@
         'gpt-4o-mini',
         'gpt-4-1-mini',
         'gpt-4o',
+        'o3-mini',
         'o4-mini'
     ];
 
@@ -228,21 +229,15 @@
         justify-content: center;
         position: relative;
         transform: translateX(0.75px) translateY(-0.75px);
-        ${settings.animations ? `
-        transition: background-color 0.2s cubic-bezier(0.4,  0,     0.2,  1),
-                    box-shadow       0.4s cubic-bezier(0.4,  0,     0.2,  1),
-                    transform        0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55);
-        ` : ''}
+        transition: background-color var(--anim-fast)   var(--easing-standard),
+                    box-shadow       var(--anim-slow)   var(--easing-standard),
+                    transform        var(--anim-normal) var(--easing-transform);
     }
     #settings-cog:hover {
         background-color: #2f2f2f;
         box-shadow: 0 0 2.5px 0 rgba(255, 255, 255, 0) inset,
                     0 0 5px   0 rgba(255, 255, 255, 0.2);
-        ${settings.animations ? `
-        transform: translateX(0.75px) translateY(-0.75px) rotate(45deg);
-        ` : `
-        transform: translateX(0.75px) translateY(-0.75px);
-        `}
+        transform: translateX(0.75px) translateY(-0.75px) var(--cog-rotate);
     }
     #settings-cog:focus {
         outline: none;
@@ -251,7 +246,7 @@
     }
 
     #settings-cog::before {
-        content: '${settings.animations ? '⚙️' : '⚙'}';
+        content: var(--cog-icon);
         transform-origin: center;
         transform: translateX(0.75px) translateY(-0.75px);
     }
@@ -315,10 +310,8 @@
         bottom: 0;
         background-color: #555;
         border-radius: 24px;
-        ${settings.animations ? `
-        transition: background-color 0.3s cubic-bezier(0.68, -0.1, 0.27, 1.1),
-                    transform 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55);
-        ` : ''}
+        transition: background-color var(--anim-normal) var(--easing-slider-bg),
+                    transform        var(--anim-normal) var(--easing-transform);
     }
     .toggle-slider:before {
         content: "";
@@ -329,66 +322,61 @@
         bottom: 3px;
         background-color: white;
         border-radius: 50%;
-        ${settings.animations ? `
-        transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55);
-        ` : ''}
+        transition: transform var(--anim-normal) var(--easing-transform);
     }
 `;
         document.head.appendChild(style);
     }
 
     /**
-     * Updates animation styles based on current settings
+     * Updates animation styles based on current settings with CSS custom properties
      */
     function updateAnimationStyles() {
-        // Remove existing styles and re-inject with updated animation settings
-        document.getElementById('settings-styles')?.remove();
-        document.getElementById('model-switcher-styles')?.remove();
-
-        injectSettingsStyles();
-        // Re-inject model switcher styles if it exists
-        const modelSwitcher = document.getElementById('chatgpt-model-switcher');
-        if (modelSwitcher) {
-            injectModelSwitcherStyles();
-        }
-        if (settings.streamerMode) {
-            updateStreamerModeStyles();
-        }
+        const root = document.documentElement;
+        const animate = settings.animations;
+        // Durations
+        root.style.setProperty('--anim-fast',   animate ? '0.2s' : '0s');
+        root.style.setProperty('--anim-normal', animate ? '0.3s' : '0s');
+        root.style.setProperty('--anim-slow',   animate ? '0.4s' : '0s');
+        // Easing functions
+        root.style.setProperty('--easing-standard',  animate ? 'cubic-bezier(0.4,   0,    0.2,  1)' : '');
+        root.style.setProperty('--easing-transform', animate ? 'cubic-bezier(0.68, -0.55, 0.27, 1.55)' : '');
+        root.style.setProperty('--easing-slider-bg', animate ? 'cubic-bezier(0.68, -0.1,  0.27, 1.1)' : '');
+        // Cog styles
+        root.style.setProperty('--cog-rotate', animate ? 'rotate(45deg)' : 'rotate(0deg)');
+        root.style.setProperty('--cog-icon', animate ? "'⚙️'" : "'⚙'");
+        // Model Switcher glow (initially invisible, transitions from this on hover)
+        root.style.setProperty('--initial-glow', animate ? `0 0 0   0 rgba(33, 33, 33, 0) inset,
+                                                            0 0 5px 0 rgba(33, 33, 33, 0)` : 'none');
     }
 
     function updateStreamerModeStyles() {
         injectStreamerModeStyles();
+        document.body.classList.toggle('streamer-mode', settings.streamerMode);
     }
 
     function injectStreamerModeStyles() {
-        // Remove old rules
-        document.getElementById('streamer-styles')?.remove();
-
-        if (!settings.streamerMode) return;  // nothing to do if disabled
+        if (document.getElementById('streamer-styles')) return;
 
         const style = document.createElement('style');
         style.id = 'streamer-styles';
 
         style.textContent = `
         /* inactive chats */
-        #history .__menu-item:not([data-active]) {
+        .streamer-mode #history .__menu-item:not([data-active]) {
             box-shadow: 0 0 2.5px 0 rgba(255, 255, 255, 0) inset,
                         0 0 5px 0 rgba(255, 255, 255, 0.2);
-            ${settings.animations ? `
-            transition: background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1),
-                        box-shadow 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            ` : ''}
+            transition: background-color var(--anim-fast) var(--easing-standard),
+                        box-shadow       var(--anim-slow) var(--easing-standard);
         }
         
         /* inactive chat titles */
-        #history .__menu-item:not([data-active]) .truncate span {
+        .streamer-mode #history .__menu-item:not([data-active]) .truncate span {
             opacity: 0;
-            ${settings.animations ? `
-            transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1),
-                        box-shadow 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            ` : ''}
+            transition: opacity    var(--anim-fast) var(--easing-standard),
+                        box-shadow var(--anim-slow) var(--easing-standard);
         }
-        #history .__menu-item:not([data-active]):hover .truncate span {
+        .streamer-mode #history .__menu-item:not([data-active]):hover .truncate span {
             opacity: 1;
         }
         `;
@@ -424,12 +412,9 @@
         background-color: #212121;
         color: #fff;
         outline: none;
-        ${settings.animations ? `
-        box-shadow: 0 0 0 0 rgba(33, 33, 33, 0) inset,
-                    0 0 5px 0 rgba(33, 33, 33, 0);
-        transition: background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1),
-                    box-shadow 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        ` : ''}
+        box-shadow: var(--initial-glow);
+        transition: background-color var(--anim-fast) var(--easing-standard),
+                    box-shadow       var(--anim-slow) var(--easing-standard);
     }
     #chatgpt-model-switcher:hover {
         background-color: #2f2f2f;
@@ -562,6 +547,7 @@
     injectModelSwitcher();
     overrideModelInRequest();
     injectSettingsMenu();
+    updateAnimationStyles();
     updateStreamerModeStyles();
 
 })();
