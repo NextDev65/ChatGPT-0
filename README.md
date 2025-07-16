@@ -2,18 +2,20 @@
 Enhance your ChatGPT experience with simple tools to boost productivity.
 
 ## Features
-- **Model Switcher** – Instantly switch between available models
-- **Streamer Mode**  – Hide chat titles unless hovered over
+- **Model Switcher** - Instantly switch between available models
+- **Streamer Mode**  - Hide chat titles unless hovered over
 
 ### TODO
 - [x] model switcher
-  - [ ] custom model strings  
+  - [ ] model descriptions
+  - [ ] custom model "slugs"
   - [ ] custom dropdown
   - [ ] vfx on model selection
 - [x] streamer mode
   - [ ] hide profile picture
 - [x] settings menu
   - [x] animations toggle
+- [ ] refactor code for better readability 🎯
 - [ ] add fallback switching with `?model=` URL param
 - [ ] switch to semantic versioning (0.37 -> 0.3.7)
 
@@ -37,5 +39,5 @@ Enhance your ChatGPT experience with simple tools to boost productivity.
 
 ### Notes
 
-- The **Model Switcher** and other features can be toggled in the settings menu (⚙️) that appears in the right side of the page header.
+- The **Model Switcher** and other features can be toggled in the settings menu (⚙️) found in the top right of the page header.
 - When using the Chrome Extensions Developer Mode, you will have to download the latest release to update manually. This will eventually be superseded by the Chrome Web Store version.
