@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ChatGPT Zero
 // @namespace    https://github.com/NextDev65/
-// @version      0.52
+// @version      0.53
 // @description  Enhancements for ChatGPT
 // @author       NextDev65
 // @downloadURL  https://raw.githubusercontent.com/NextDev65/ChatGPT-0/main/ChatGPT-Zero.js
@@ -96,16 +96,12 @@
         return container;
     }
 
+
     /**
-     * Creates and returns a <button> element with an attached settings menu.
-     * @returns {HTMLButtonElement}
+     * Creates and returns a settings menu.
+     * @returns {HTMLDivElement}
      */
     function createSettingsMenu() {
-        const cog = document.createElement('button');
-        cog.id = 'settings-cog';
-        //cog.textContent = settings.animations ? '⚙️' : '⚙';
-        cog.setAttribute('aria-label', 'Settings');
-
         const menu = document.createElement('div');
         menu.id = 'settings-menu';
         menu.className = 'settings-dropdown';
@@ -140,6 +136,20 @@
 
         // Append menu to body to avoid positioning issues
         document.body.appendChild(menu);
+
+        return menu;
+    }
+
+    /**
+     * Creates and returns a <button> element with an attached settings menu.
+     * @param {div} menu - The settings menu to be attached
+     * @returns {HTMLButtonElement}
+     */
+    function createSettingsCog(menu) {
+        const cog = document.createElement('button');
+        cog.id = 'settings-cog';
+        //cog.textContent = settings.animations ? '⚙️' : '⚙';
+        cog.setAttribute('aria-label', 'Settings');
 
         // Toggle menu visibility
         cog.addEventListener('click', (e) => {
@@ -469,15 +479,19 @@
     function injectSettingsMenu() {
         const checkInterval = setInterval(() => {
             const modelSwitcher = document.getElementById('chatgpt-model-switcher');
-            let cog = document.getElementById('settings-cog');
+            if (!modelSwitcher) return; // Wait until the model switcher is available
 
-            // Create cog if it doesn't exist yet
-            if (!cog) {
-                cog = createSettingsMenu();
+            let cog = document.getElementById('settings-cog');
+            let menu = document.getElementById('settings-menu');
+
+            // Create menu if it doesn't exist yet
+            if (!menu) {
+                menu = createSettingsMenu();
             }
-            // Insert cog after visible model switcher
-            if (modelSwitcher && !cog.parentNode && modelSwitcher.parentNode) {
-                modelSwitcher.parentNode.insertBefore(cog, modelSwitcher.nextSibling);
+            // Create cog + Insert cog after visible model switcher (if it doesn't exist)
+            if (!cog) {
+                cog = createSettingsCog(menu);
+                modelSwitcher.after(cog); // Use the more modern and readable .after()
             }
         }, 1000);
     }
