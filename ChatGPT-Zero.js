@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ChatGPT Zero
 // @namespace    https://github.com/NextDev65/
-// @version      0.53
+// @version      0.54
 // @description  Enhancements for ChatGPT
 // @author       NextDev65
 // @downloadURL  https://raw.githubusercontent.com/NextDev65/ChatGPT-0/main/ChatGPT-Zero.js
@@ -389,6 +389,11 @@
         .streamer-mode #history .__menu-item:not([data-active]):hover .truncate span {
             opacity: 1;
         }
+        
+        /* accounts profile */
+        .streamer-mode [data-testid="accounts-profile-button"] {
+            display: none !important;
+        }
         `;
 
         document.head.appendChild(style);
@@ -560,8 +565,8 @@
     // Initialize the userscript
     injectModelSwitcher();
     overrideModelInRequest();
+    updateStreamerModeStyles();
     injectSettingsMenu();
     updateAnimationStyles();
-    updateStreamerModeStyles();
 
 })();
