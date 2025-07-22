@@ -5,15 +5,18 @@ Enhance your ChatGPT experience with simple tools to boost productivity.
 - **Model Switcher** - Instantly switch between available models
 - **Streamer Mode**  - Hide chat titles unless hovered over
 
-### TODO
+### Roadmap
 - [x] model switcher
+  - [x] switch models on the fly (you don't need to send a message first and then regenerate)
   - [ ] model descriptions
-  - [ ] custom model "slugs"
   - [ ] custom dropdown
+  - [ ] custom model "slugs"
   - [ ] vfx on model selection
 - [x] streamer mode
+  - [x] hide chat titles
   - [x] hide profile picture
 - [x] settings menu
+  - [x] feature toggles
   - [x] animations toggle
 - [ ] refactor code for better readability 🎯
 - [ ] add fallback switching with `?model=` URL param
