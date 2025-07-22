@@ -12,7 +12,7 @@ Enhance your ChatGPT experience with simple tools to boost productivity.
   - [ ] custom dropdown
   - [ ] vfx on model selection
 - [x] streamer mode
-  - [ ] hide profile picture
+  - [x] hide profile picture
 - [x] settings menu
   - [x] animations toggle
 - [ ] refactor code for better readability 🎯
