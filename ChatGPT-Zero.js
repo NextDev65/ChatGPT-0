@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ChatGPT Zero
 // @namespace    https://github.com/NextDev65/
-// @version      0.54
+// @version      0.55
 // @description  Enhancements for ChatGPT
 // @author       NextDev65
 // @downloadURL  https://raw.githubusercontent.com/NextDev65/ChatGPT-0/main/ChatGPT-Zero.js
@@ -18,17 +18,13 @@
     // --- Configuration ---
     const PREFERRED_MODEL_KEY = 'preferredChatGPTModel';
     const SETTINGS_KEY = 'chatgptZeroSettings';
-    const DEFAULT_MODEL = 'gpt-4o-mini';
+    const DEFAULT_MODEL = 'gpt-4-1-mini';
     const MODELS = [
-        'gpt-3.5-turbo',
-        'text-davinci-002-render-sha',
-        'text-davinci-002-render-sha-mobile',
         'gpt-4-mobile',
         'gpt-4o-mini',
         'gpt-4-1-mini',
-        'gpt-4o',
-        'o3-mini',
-        'o4-mini'
+        'gpt-5',
+        'auto'
     ];
 
     // Default settings
