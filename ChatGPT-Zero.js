@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ChatGPT Zero
 // @namespace    https://github.com/NextDev65/
-// @version      0.57
+// @version      0.58
 // @description  Enhancements for ChatGPT
 // @author       NextDev65
 // @downloadURL  https://raw.githubusercontent.com/NextDev65/ChatGPT-0/main/ChatGPT-Zero.js
@@ -488,10 +488,12 @@
             if (!menu) {
                 menu = createSettingsMenu();
             }
-            // Create cog + Insert cog after visible model switcher (if it doesn't exist)
+            // Create cog + Insert cog before toolbar
             if (!cog) {
                 cog = createSettingsCog(menu);
-                modelSwitcher.after(cog); // Use the more modern and readable .after()
+                //modelSwitcher.after(cog);
+                
+                document.getElementById('page-header').lastChild.prepend(cog); // last child of page header
             }
         }, 1000);
     }
