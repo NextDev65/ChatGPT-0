@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ChatGPT Zero
 // @namespace    https://github.com/NextDev65/
-// @version      0.58
+// @version      0.59
 // @description  Enhancements for ChatGPT
 // @author       NextDev65
 // @downloadURL  https://raw.githubusercontent.com/NextDev65/ChatGPT-0/main/ChatGPT-Zero.js
@@ -506,26 +506,32 @@
         const checkInterval = setInterval(() => {
             const nativeModelSwitchers = document.querySelectorAll('[data-testid="model-switcher-dropdown-button"]');
             let switcher = document.getElementById('chatgpt-model-switcher');
-
+            const getPlusClassName = ['absolute start-1/2 flex flex-col items-center gap-2 ltr:-translate-x-1/2 rtl:translate-x-1/2',
+                                      'pointer-events-none absolute start-0 flex flex-col items-center gap-2 lg:start-1/2 ltr:-translate-x-1/2 rtl:translate-x-1/2'];
             // Create switcher
             if (!switcher) {
-                const getPlusClassName = 'absolute start-1/2 flex flex-col items-center gap-2 ltr:-translate-x-1/2 rtl:translate-x-1/2';
-
                 const savedModel = localStorage.getItem(PREFERRED_MODEL_KEY) || DEFAULT_MODEL;
                 switcher = createModelSwitcher(savedModel);
-                switcher.className = getPlusClassName;
-
-                // move "Get Plus" button
-                let getPlus = document.getElementsByClassName(getPlusClassName)[0];
-                //document.getElementById('page-header').childNodes[1].appendChild(getPlus); // 2nd child of page header
-                nativeModelSwitchers[0].parentNode.appendChild(getPlus);                     // first nativeModelSwitcher
-                getPlus.className = '';
             }
             // Insert switcher next to the first visible native button
             if (!switcher.parentNode) {
                 for (let nativeModelSwitcher of nativeModelSwitchers) {
                     if (nativeModelSwitcher.checkVisibility && nativeModelSwitcher.checkVisibility()) {
                         nativeModelSwitcher.parentNode.after(switcher);
+
+                        // move "Get Plus" button
+                        let getPlus = null;
+                        for (let className of getPlusClassName) {
+                            let elements = document.getElementsByClassName(className);
+                            if (elements.length > 0) {
+                                // give getPlus styling to switcher
+                                switcher.className = getPlusClassName;
+                                getPlus = elements[0];
+                                break;
+                            }
+                        }
+                        nativeModelSwitcher.parentNode.appendChild(getPlus);
+                        getPlus.className = '';
                         break;
                     }
                 }
