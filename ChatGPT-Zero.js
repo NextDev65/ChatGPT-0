@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ChatGPT Zero
 // @namespace    https://github.com/NextDev65/
-// @version      0.59
+// @version      0.60
 // @description  Enhancements for ChatGPT
 // @author       NextDev65
 // @downloadURL  https://raw.githubusercontent.com/NextDev65/ChatGPT-0/main/ChatGPT-Zero.js
@@ -9,7 +9,9 @@
 // @homepageURL  https://github.com/NextDev65/ChatGPT-0
 // @supportURL   https://github.com/NextDev65/ChatGPT-0
 // @match        https://chatgpt.com/*
-// @grant        none
+// @grant        GM_xmlhttpRequest
+// @grant        unsafeWindow
+// @connect      artificialanalysis.ai
 // ==/UserScript==
 
 (function () {
@@ -19,12 +21,72 @@
     const PREFERRED_MODEL_KEY = 'preferredChatGPTModel';
     const SETTINGS_KEY = 'chatgptZeroSettings';
     const DEFAULT_MODEL = 'auto';
-    const MODELS = [
-        'gpt-5',
-        'gpt-5-mini',
-        'gpt-5-t-mini',
-        'auto'
-    ];
+    const MODELS = {
+        'gpt-5-3': {
+            label: 'GPT 5.3',
+            aaSlug: 'gpt-5-3-codex'
+        },
+        'gpt-5-mini': {
+            label: 'GPT 5 Mini',
+            aaSlug: 'gpt-5-mini-minimal'
+        },
+        'gpt-5-t-mini': {
+            label: 'GPT 5 Thinking Mini',
+            aaSlug: 'gpt-5-mini'
+        },
+        'auto': {
+            label: 'Auto',
+            aaSlug: null
+        }
+    };
+
+    // Cache configuration for Artificial Analysis stats
+    const AA_CACHE_KEY = 'aa_model_stats';
+    const AA_CACHE_TTL = 1000 * 60 * 60 * 24; // 24 hours
+
+    // User-provided API key storage
+    const AA_API_KEY_STORAGE = 'aa_api_key';
+
+    /**
+     * Initializes the model stats Promise (if not already created)
+     */
+    let modelStatsPromise = null;
+    function initStats() {
+        if (!modelStatsPromise) {
+            modelStatsPromise = getStats(MODELS).catch(err => {
+                console.warn('Stats fetch failed', err);
+                return {};
+            });
+        }
+    }
+
+    /**
+     * Gets the user-provided API key from localStorage
+     * @returns {string|null}
+     */
+    function getApiKey() {
+        try {
+            return localStorage.getItem(AA_API_KEY_STORAGE) || null;
+        } catch {
+            return null;
+        }
+    }
+
+    /**
+     * Sets or removes the API key in localStorage
+     * @param {string|null} key - The API key to store, or null/empty to remove
+     */
+    function setApiKey(key) {
+        try {
+            if (key) {
+                localStorage.setItem(AA_API_KEY_STORAGE, key);
+            } else {
+                localStorage.removeItem(AA_API_KEY_STORAGE);
+            }
+        } catch (e) {
+            console.warn('Failed to store API key', e);
+        }
+    }
 
     // Default settings
     const DEFAULT_SETTINGS = {
@@ -33,7 +95,7 @@
         animations: true
     };
 
-    // Load settings from localStorage
+    // Storage helpers (Settings)
     function loadSettings() {
         try {
             const saved = localStorage.getItem(SETTINGS_KEY);
@@ -44,7 +106,6 @@
         }
     }
 
-    // Save settings to localStorage
     function saveSettings(settings) {
         try {
             localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
@@ -53,7 +114,6 @@
         }
     }
 
-    // Global settings object
     let settings = loadSettings();
 
     /**
@@ -96,6 +156,39 @@
      * Creates and returns a settings menu.
      * @returns {HTMLDivElement}
      */
+    function createApiKeyInput() {
+        const container = document.createElement('div');
+        container.className = 'api-key-container';
+
+        const label = document.createElement('label');
+        label.className = 'api-key-label';
+        label.textContent = 'Artificial Analysis API Key';
+
+        const input = document.createElement('input');
+        input.type = 'password';
+        input.className = 'api-key-input';
+        input.placeholder = 'API key (for model stats)';
+        input.value = getApiKey() || '';
+
+        input.addEventListener('change', () => {
+            const value = input.value.trim();
+            // Only store if value starts with 'aa_' (Artificial Analysis key prefix)
+            if (value.startsWith('aa_')) {
+                setApiKey(value);
+            } else {
+                // Clear invalid key
+                setApiKey('');
+                input.value = '';
+                console.warn('API key should start with \'aa_\'')
+            }
+        });
+
+        container.appendChild(label);
+        container.appendChild(input);
+
+        return container;
+    }
+
     function createSettingsMenu() {
         const menu = document.createElement('div');
         menu.id = 'settings-menu';
@@ -128,6 +221,9 @@
         menu.appendChild(modelSwitcherToggle);
         menu.appendChild(streamerModeToggle);
         menu.appendChild(animationsToggle);
+
+        // Add API key input
+        menu.appendChild(createApiKeyInput());
 
         // Append menu to body to avoid positioning issues
         document.body.appendChild(menu);
@@ -329,6 +425,39 @@
         border-radius: 50%;
         transition: transform var(--anim-normal) var(--easing-transform);
     }
+
+    .api-key-container {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        margin-bottom: 12px;
+    }
+    .api-key-container:last-child {
+        margin-bottom: 0;
+    }
+
+    .api-key-label {
+        color: #fff;
+        font-size: 14px;
+    }
+
+    .api-key-input {
+        width: 100%;
+        padding: 8px 12px;
+        border: 1px solid #555;
+        border-radius: 4px;
+        background-color: #1a1a1a;
+        color: #fff;
+        font-size: 13px;
+        box-sizing: border-box;
+    }
+    .api-key-input:focus {
+        outline: none;
+        border-color: #4CAF50;
+    }
+    .api-key-input::placeholder {
+        color: #777;
+    }
 `;
         document.head.appendChild(style);
     }
@@ -440,26 +569,125 @@
         document.head.appendChild(style);
     }
 
+
+    /**
+     * Unified function to get model stats from Artificial Analysis API.
+     * Uses caching to avoid repeated API calls.
+     * @param {object} modelConfig - The MODELS configuration object
+     * @returns {Promise<object>} - Promise resolving to stats object { slug: index }
+     */
+    function getStats(modelConfig) {
+        const API_KEY = getApiKey();
+        
+        // If no API key, fail silently and return empty stats
+        if (!API_KEY) {
+            return Promise.resolve({});
+        }
+        
+        const URL = "https://artificialanalysis.ai/api/v2/data/llms/models";
+
+        const now = Date.now();
+
+        let cache = null;
+        try {
+            cache = JSON.parse(localStorage.getItem(AA_CACHE_KEY));
+        } catch {}
+
+        const cachedStats = cache?.stats || {};
+        const timestamp = cache?.timestamp || 0;
+        const isExpired = (now - timestamp) > AA_CACHE_TTL;
+
+        // Determine required models
+        const missing = Object.entries(modelConfig)
+            .filter(([slug, cfg]) => cfg.aaSlug && cachedStats[slug] === undefined)
+            .map(([slug]) => slug);
+
+        // Use cache if valid and complete
+        if (!isExpired && missing.length === 0) {
+            return Promise.resolve(cachedStats);
+        }
+
+        // Fetch from API
+        return new Promise((resolve, reject) => {
+            GM_xmlhttpRequest({
+                method: "GET",
+                url: URL,
+                headers: { "x-api-key": API_KEY },
+                onload: function (response) {
+                    try {
+                        const json = JSON.parse(response.responseText);
+                        const newStats = { ...cachedStats };
+
+                        for (const [slug, config] of Object.entries(modelConfig)) {
+                            if (!config.aaSlug) continue;
+
+                            const model = json.data.find(m => m.slug === config.aaSlug);
+
+                            if (!model) {
+                                console.warn(config.aaSlug, "not found");
+                                continue;
+                            }
+
+                            newStats[slug] =
+                                model.evaluations?.artificial_analysis_intelligence_index ?? null;
+                        }
+
+                        // Save updated cache
+                        localStorage.setItem(AA_CACHE_KEY, JSON.stringify({
+                            timestamp: now,
+                            stats: newStats
+                        }));
+
+resolve(newStats);
+                    } catch (err) {
+                        reject(err);
+                    }
+                },
+                onerror: reject
+            });
+        });
+    }
+
+
     /**
      * Creates and returns a <select> element configured as the model switcher.
      * @param {string} currentModel - Model to pre-select in the dropdown.
      * @returns {HTMLSelectElement}
      */
-    function createModelSwitcher(currentModel) {
+    async function createModelSwitcher(currentModel) {
         const select = document.createElement('select');
         select.id = 'chatgpt-model-switcher';
 
         // Inject CSS for base styling, hover, focus, and transition effects
         injectModelSwitcherStyles();
 
+        // Fetch stats
+        let stats = {};
+        try {
+            stats = await modelStatsPromise;
+        } catch (e) {
+            console.warn('Failed to load stats', e);
+        }
+
         // Populate dropdown with model options
-        MODELS.forEach(model => {
+        for (const [slug, config] of Object.entries(MODELS)) {
             const option = document.createElement('option');
-            option.value = model;
-            option.textContent = model;
-            if (model === currentModel) option.selected = true;
+            option.value = slug;
+            option.textContent = config.label || slug;
+
+            if (slug === currentModel) {
+                option.selected = true;
+            }
+
+            // Tooltip with index (only show if data is available)
+            if (stats[slug] != null) {
+                option.title = `AA Index: ${stats[slug]}`;
+            } else {
+                option.title = '';
+            }
+
             select.appendChild(option);
-        });
+        }
 
         // Save selection to localStorage on change
         select.addEventListener('change', () => {
@@ -502,8 +730,8 @@
      * Finds the native model switcher in the UI and inserts our custom switcher beside it.
      * Retries every second until the native element is visible.
      */
-    function injectModelSwitcher() {
-        const checkInterval = setInterval(() => {
+    async function injectModelSwitcher() {
+        const checkInterval = setInterval(async () => {
             const nativeModelSwitchers = document.querySelectorAll('[data-testid="model-switcher-dropdown-button"]');
             let switcher = document.getElementById('chatgpt-model-switcher');
             const getPlusClassName = ['absolute start-1/2 flex flex-col items-center gap-2 ltr:-translate-x-1/2 rtl:translate-x-1/2',
@@ -511,7 +739,7 @@
             // Create switcher
             if (!switcher) {
                 const savedModel = localStorage.getItem(PREFERRED_MODEL_KEY) || DEFAULT_MODEL;
-                switcher = createModelSwitcher(savedModel);
+                switcher = await createModelSwitcher(savedModel);
             }
             // Insert switcher next to the first visible native button
             if (!switcher.parentNode) {
@@ -547,8 +775,8 @@
         // Only override if model switcher is enabled
         if (!settings.modelSwitcher) return;
 
-        const origFetch = window.fetch;
-        window.fetch = async (...args) => {
+        const origFetch = unsafeWindow.fetch;
+        unsafeWindow.fetch = async (...args) => {
             const [resource, config] = args;
             const savedModel = localStorage.getItem(PREFERRED_MODEL_KEY) || DEFAULT_MODEL;
 
@@ -575,10 +803,10 @@
     }
 
     // Initialize the userscript
+    initStats();
     injectModelSwitcher();
     overrideModelInRequest();
     updateStreamerModeStyles();
     injectSettingsMenu();
     updateAnimationStyles();
-
 })();
