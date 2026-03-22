@@ -1,8 +1,9 @@
-# ChatGPT-0
+# ChatGPT-0 <img src="https://img.shields.io/github/v/release/NextDev65/ChatGPT-0" align="right">
 Enhance your ChatGPT experience with simple tools to boost productivity.
 
-## Features
+## Features <img src="assets/Artificial Analysis Logo Kit/Icon + Artificial Analysis - Horizontal.png" width="150" align="right">
 - **Model Switcher** - Instantly switch between available models
+  - view intelligence index (from https://artificialanalysis.ai/) 
 - **Streamer Mode**  - Hide chat titles unless hovered over
 
 ### Roadmap
@@ -24,7 +25,7 @@ Enhance your ChatGPT experience with simple tools to boost productivity.
 
 ## Installation
 
-### Option 1: Using Tampermonkey (Userscript)
+### Tampermonkey (Userscript)
 
 1. Install the [Tampermonkey extension](https://www.tampermonkey.net/) for your browser (Chrome, Firefox, Edge, etc.).
 2. Click the **Install** button for the [userscript](https://greasyfork.org/en/scripts/539826-chatgpt-zero) or create a new script in Tampermonkey and paste the contents of `ChatGPT Zero.js`.
@@ -32,15 +33,23 @@ Enhance your ChatGPT experience with simple tools to boost productivity.
 
 ---
 
-### Option 2: Using Chrome Extensions Developer Mode (Browser Extension)
+### Developer Mode (Browser Extension)
 
-1. Download and unzip the latest [chrome extension zip](https://github.com/NextDev65/ChatGPT-0/releases).
-2. [Load the unpacked extension](https://developer.chrome.com/docs/extensions/get-started/tutorial/hello-world#:~:text=Load%20an%20unpacked%20extension).
+1. Download and unzip the latest [chrome/firefox extension zip](https://github.com/NextDev65/ChatGPT-0/releases).
+2. Load the unpacked extension ([Chrome](https://developer.chrome.com/docs/extensions/get-started/tutorial/hello-world#:~:text=Load%20an%20unpacked%20extension) / [Firefox](https://extensionworkshop.com/documentation/develop/temporary-installation-in-firefox/)).
 3. The extension will automatically activate on [https://chatgpt.com](https://chatgpt.com).
+
+---
+
+### Optional: Intelligence Index from Artificial Analysis
+
+1. Make a free account at https://artificialanalysis.ai/
+2. Generate and copy an API key into the settings menu
+3. Hover over models in the switcher to see the Intelligence Index!
 
 ---
 
 ### Notes
 
 - The **Model Switcher** and other features can be toggled in the settings menu (⚙️) found in the top right of the page header.
-- When using the Chrome Extensions Developer Mode, you will have to download the latest release to update manually. This will eventually be superseded by the Chrome Web Store version.
+- When using the Browser Extension, you will have to download the latest release to update manually. This will eventually be superseded by the Chrome Web Store and Firefox Add-ons versions.
